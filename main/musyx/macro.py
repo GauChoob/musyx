@@ -232,8 +232,8 @@ class SoundMacroStep:
             cent = min(99,math.ceil(cent))
         return key,cent
     def solve_cents(self,index):
-        cent = self.value(index,1,False) #Assume positive number, but this is probably opcode-specific. More research required
-        key,cent = self._solve_keycents(cents)
+        cent = self.val(index,1,False) #Assume positive number, but this is probably opcode-specific. More research required
+        key,cent = self._solve_keycents(cent)
         assert key == 0
         return cent
         
@@ -437,7 +437,7 @@ class SoundMacroStep:
                 self.store(note1,1)
                 note2 = self.val(3)
                 self.store(note2,3)
-                key,cent = self.solve_cents(4) #cent is always positive
+                cent = self.solve_cents(4) #cent is always positive
                 self.store(cent,2)
             elif(opcode == 0x08): #ADDNOTE
                 self.store(0x18,0)
