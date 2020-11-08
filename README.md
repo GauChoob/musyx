@@ -23,7 +23,7 @@ TABLE OF CONTENTS
 8.0 SoundMacro format (.mxm files)
 9.0 Python Package
     9.1 Finding the MusyX data
-    9.2 Determining Song and SoundMacro count
+    9.2 Determining Song and SoundMacro count, and choosing gm2song.exe
     9.3 Extracting the Data
 
 --------------------
@@ -858,7 +858,7 @@ Alternatively, find the bank that makes multiple read/writes to WRAM in the $DF0
 
 Next, you need to find where the MusyX driver code ends and where the project data starts. This should be located around address $5A79 but it varies by a few bytes depending on the MusyX version. In general, the MusyX driver ends with the following byte string: $AC $DF $AF $C9 $FC $F3 $CF $3F. The address immediately after $3F is the project data. Modify constants.py to insert that address.
 
-9.2 Determining Song and SoundMacro count
+9.2 Determining Song and SoundMacro count, and choosing gm2song.exe
 
 To properly label the songs and soundmacros, the total number of songs and soundmacros must be known.
 
@@ -869,6 +869,9 @@ Set your MusyX bank and rom filepath.
 Run the program and it should give you a number for the number of songs and soundmacros.
 
 Edit musyx/utils.py and input these numbers.
+
+There are two provided files, gm2song103.exe and gm2song129g.exe. You need to choose the version of this exe file that converts midi->data. If you aren't sure, you can try version 1.03 first. Simply rename gm2song103.exe to gm2song.exe so that your python program can find it.
+
 
 9.3 Extracting the Data
 
