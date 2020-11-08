@@ -1,3 +1,4 @@
+```
 MusyX is a sound system developed by Factor 5 for the Gameboy and other consoles.
 
 It essentially acts as a sound driver, simplifying the life of the musician and programmer. The musician provides midi files and programmed sound effects which are converted and assigned ids. These ids can be used by the programmer to play music and sound effects.
@@ -869,3 +870,4 @@ I was not able to figure out the exact algorithm for determining the right order
 SFX parameters
 
 This will generate a file called sfxinfo.txt that will tell you what parameters to put in each for SFX. Simply create an SFXgroup and then transcribe the info from the .txt file into the SFXgroup
+```
