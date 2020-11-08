@@ -1,5 +1,5 @@
 import os, math
-from musyx.constants import snd_ProjectData,sdp_ADSRTableAddress
+from musyx.constants import snd_ProjectData,sdp_ADSRTableAddress,sdp_SFXTableAddress
 from musyx.utils import transform_id,ID_ADSR
 from musyx.utils import littledata_to_word, twobytearray
     
@@ -26,7 +26,12 @@ def adsr2mxt(romfile,musyx_position,adsrnames):
     
     projectdata_pos = musyx_position+snd_ProjectData-0x4000
     adsrtable_address_pos = projectdata_pos + sdp_ADSRTableAddress
+    sfx_address_pos = projectdata_pos + sdp_SFXTableAddress
     adsrbase_offset = littledata_to_word(rom,adsrtable_address_pos)
+    sfxbase_offset = littledata_to_word(rom,sfx_address_pos)
+    if(adsrbase_offset == sfxbase_offset):
+        print("There seems to be 0 ADSR entries. Aborting")
+        return
     adsrbase_pos = adsrbase_offset + projectdata_pos
     
     
