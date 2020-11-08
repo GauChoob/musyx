@@ -76,9 +76,9 @@ The MusyX driver is composed of several components. First, there is the driver c
 Driver code:
 
 1) musyx.o
-	This is the main code of the driver. It's about $1A79 bytes long. It must be placed at the beginning of any bank, address $4000. This bank is called bank MUSYX
+	This is the main code of the driver. It's about $1A79 bytes long (the exact size varies based on the driver version). It must be placed at the beginning of any bank, address $4000. This bank is called bank MUSYX
 2) musyxb0.o
-	This contains driver code that needs to use the second ROM bank to access data. It is $550 bytes long and needs to be placed anywhere in bank 0. It is often placed at the end of bank 0 (address $3AB0 to $4000)
+	This contains driver code that needs to use the second ROM bank to access data. It is $550 bytes long and needs to be placed anywhere in bank 0. It is often placed at the end of bank 0 (address $3AB0 to $4000), but this is up to the discretion of the developer.
 3) WRAM memory
 	MusyX reserves $DF00 - $DFFF of a WRAM bank to store information to operate the driver
 
@@ -901,7 +901,7 @@ SAMPLES
 
 .wav files will automatically be generated. Import these files in the indicated order.
 
-I was not able to figure out the exact algorithm for determining the right order of the samples. Therefore, you might have to experimentally change the sample ids in order to get the sample order as in the original rom file. To do this, right-click a sample and select Properties, and then change the ObjectID (select Yes to updating the references to keep the SoundMacros in sync with the samples). Keep changing the ObjectIDs until you get the desired output order.
+I was not able to figure out the exact algorithm for determining the right order of the samples. Therefore, you might have to experimentally change the sample ids in order to get the sample order as in the original rom file. To do this, right-click a sample and select Properties, and then change the ObjectID (select Yes to updating the references to keep the SoundMacros in sync with the samples). Keep changing the ObjectIDs until you get the desired output order. To make sure you have the correct output order, when generating your .proj and .pool files, your debug out.txt at the very end of the file should be including the .wav files in decrementing order (004, 003, 002, 001).
 
 SFX parameters
 
