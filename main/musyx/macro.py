@@ -406,7 +406,7 @@ class SoundMacroStep:
                     duty = self.val(1)
                     self.store(duty,1)
                 else:
-                    print("Macro {:02X} - guessing step {} to be VOICE_ON, but it could also be WAVE_ON".format(self.parent_index,self.step))
+                    print("Macro {:03} - guessing step {} to be VOICE_ON, but it could also be WAVE_ON".format(self.parent_index,self.step))
                     self.store(0x14,0)
                     duty = self.val(1)
                     self.store(duty,1)

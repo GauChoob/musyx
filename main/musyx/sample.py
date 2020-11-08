@@ -41,9 +41,9 @@ def sample2wav(romfile,musyx_position,samplenames):
     
     for i in range(sample_n):
         if(i < len(samplenames)):
-            name = "sample_{:02X}_{}".format(transform_id(i,ID_SAMPLE),samplenames[i])
+            name = "sample_{:03}_{}".format(transform_id(i,ID_SAMPLE),samplenames[i])
         else:
-            name = "sample_{:02X}".format(transform_id(i,ID_SAMPLE))
+            name = "sample_{:03}".format(transform_id(i,ID_SAMPLE))
         print(name)
         
         sample_address = littledata_to_word(rom,sampletable_pos+i*6+0)
