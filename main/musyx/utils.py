@@ -1,5 +1,5 @@
-NUMBER_OF_MACROS = None#50
-NUMBER_OF_SONGS = None#41
+NUMBER_OF_MACROS = None
+NUMBER_OF_SONGS = None
 assert NUMBER_OF_MACROS is not None
 assert NUMBER_OF_SONGS is not None
 
