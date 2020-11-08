@@ -1,4 +1,35 @@
 ```
+TABLE OF CONTENTS
+
+0.0 Intro
+1.0 MusyX Versions
+2.0 Structure Overview
+3.0 How MusyX Handles Sound
+    3.1 Raw sample
+    3.2 SoundMacros
+4.0 Setting Up Output Files and the Format of Output Files
+    4.1 Generating .pool and .proj files from musician's project
+5.0 .proj file format
+    5.1 SoundMacro_Table
+    5.2 ADSR_Table
+    5.3 SFX_Table
+    5.4 Sample_Table
+    5.5 Song_Table
+6.0 .pool file format
+    6.1 Sample data
+    6.2 Song data
+        6.2.0 .song info
+7.0 ADSR format (.mxt files)
+8.0 SoundMacro format (.mxm files)
+9.0 Python Package
+    9.1 Finding the MusyX data
+    9.2 Determining Song and SoundMacro count
+    9.3 Extracting the Data
+
+--------------------
+
+0.0 Intro
+
 MusyX is a sound system developed by Factor 5 for the Gameboy and other consoles.
 
 It essentially acts as a sound driver, simplifying the life of the musician and programmer. The musician provides midi files and programmed sound effects which are converted and assigned ids. These ids can be used by the programmer to play music and sound effects.
@@ -814,7 +845,7 @@ This information is extracted in python/out/
 
 The package was designed with MUConv.exe version 1.04 in mind, but it might be useful or compatible with other MUConv.exe versions.
 
-9.0.1 Finding the MusyX data
+9.1 Finding the MusyX data
 
 First, you need to find your MusyX bank. Here are some somewhat unique byte strings that probably exist in all versions of MusyX:
 
@@ -825,7 +856,7 @@ Search for one of these byte strings and use that bank as your MusyX bank
 
 Alternatively, find the bank that makes multiple read/writes to WRAM in the $DF00-DFFE memory range, or the bank that makes multiple read/writes to the sound registers.
 
-9.0.2 Determining Song and SoundMacro count
+9.2 Determining Song and SoundMacro count
 
 To properly label the songs and soundmacros, the total number of songs and soundmacros must be known.
 
@@ -837,7 +868,7 @@ Run the program and it should give you a number for the number of songs and soun
 
 Edit musyx/utils.py and input these numbers.
 
-9.0.3 Extracting the Data
+9.3 Extracting the Data
 
 After editing musyx.utils.py as described in 9.0.2, use example_parse.py to extract all the data from the rom.
 
