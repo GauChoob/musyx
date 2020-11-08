@@ -1,4 +1,5 @@
-snd_ProjectData = 0x5A79
+snd_ProjectData = None #Depends on the ROM. Could be 0x5A79 or 0x5A87 or some similar address
+assert snd_ProjectData is not None
 sdp_ADSRTableAddress = 0
 sdp_SFXTableAddress = 2
 sdp_NumberOfSFXs = 4

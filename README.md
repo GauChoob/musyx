@@ -856,6 +856,8 @@ Search for one of these byte strings and use that bank as your MusyX bank
 
 Alternatively, find the bank that makes multiple read/writes to WRAM in the $DF00-DFFE memory range, or the bank that makes multiple read/writes to the sound registers.
 
+Next, you need to find where the MusyX driver code ends and where the project data starts. This should be located around address $5A79 but it varies by a few bytes depending on the MusyX version. In general, the MusyX driver ends with the following byte string: $AC $DF $AF $C9 $FC $F3 $CF $3F. The address immediately after $3F is the project data. Modify constants.py to insert that address.
+
 9.2 Determining Song and SoundMacro count
 
 To properly label the songs and soundmacros, the total number of songs and soundmacros must be known.
