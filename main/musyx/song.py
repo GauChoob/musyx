@@ -272,12 +272,16 @@ def song2gm(songfile,startposition,midifile):
                 trackdata[trackheader[i].blocka[-1].index].events.insert(0,trackheader[0].getLoopStart())
                 trackdata[trackheader[i].blocka[-1].index].events.append(trackheader[0].getLoopEnd())
                 trackdata[trackheader[i].blocka[-1].index].events.sort(key=lambda x:x.absolute_time)
-            
-        last_absolute_time = 0
+
+        blockamergedevents = []
         for j in range(len(trackheader[i].blocka)):
-            for event in trackdata[trackheader[i].blocka[j].index].events:
-                midi_event,last_absolute_time = event.getMessage(channel,last_absolute_time)
-                track.append(midi_event)
+            blockamergedevents += trackdata[trackheader[i].blocka[j].index].events.copy()
+        blockamergedevents.sort(key=lambda x:x.absolute_time)
+        
+        last_absolute_time = 0
+        for event in blockamergedevents:
+            midi_event,last_absolute_time = event.getMessage(channel,last_absolute_time)
+            track.append(midi_event)
             
         track.append(mido.MetaMessage('end_of_track'))
         midi.tracks.append(track)
