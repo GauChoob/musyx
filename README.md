@@ -25,6 +25,7 @@ TABLE OF CONTENTS
     9.1 Finding the MusyX data
     9.2 Determining Song and SoundMacro count, and choosing gm2song.exe
     9.3 Extracting the Data
+10.0 Miscellaneous Notes or MusyX Design Considerations
 
 --------------------
 
@@ -375,37 +376,37 @@ When adding a program change event, it will only be executed at the time of the 
 NOTE THAT ALL 2-BYTE VALUES ARE BIG-ENDIAN
 
 File header
-	ds 2 - pointer to Track header table (always $0006)
-	ds 2 - pointer to Track table
+	ds 2 - pointer to Track table (always $0006)
+	ds 2 - pointer to Pattern table
 	ds 2 - BPM
 
-Track header table
+Track table
 	ds 2 - pointer to Track 0 header, or 0 if undefined
 	ds 2 - pointer to Track 1 header, or 0 if undefined
 	ds 2 - pointer to Track 2 header, or 0 if undefined
 	ds 2 - pointer to Track 3 header, or 0 if undefined
 
-Track header
+Track
 	null if track is unused
-	Each track header defines 1 or 2 tracks (BLOCKA)
-	Each track header ends with loop information (BLOCKB)
+	Each track defines 1 or 2 normal patterns (PATTERNA)
+	Each track ends with a pattern that contains loop information (PATTERNB)
 
-	BLOCKA
-		First BLOCKA defines a track from start of the song until the beginning of the song loop
+	PATTERNA
+		First PATTERNA defines a pattern from start of the song until the beginning of the song loop
 		ds 2 - time to first event
-		ds 1 - track index number
+		ds 1 - pattern index number
 
-	BLOCKA
-		Second BLOCKA defines a track from when the loop starts
+	PATTERNA
+		Second PATTERNA defines a pattern from when the loop starts
 		This block only exists if (1) there is a song loop and (2) the song doesn't loop back to the very beginning, but somewhere in the middle
-		ds 2 - time to first event after song loop, minus the time of the first BLOCKA
-		ds 1 - track index number
+		ds 2 - time to first event after song loop, minus the time of the first PATTERNA
+		ds 1 - pattern index number
 
-	BLOCKB
+	PATTERNB
 		If there is a loop:
-			ds 2 - time between the first event until LoopEndRepeat
+			ds 2 - time between the first event of the previous PATTERNA until LoopEndRepeat
 			db $FE
-			ds 2 - The offset from the start of the header pointing to the beginning of the last BLOCKA (i.e. a value of 3*(count(BLOCKA)-1))
+			ds 2 - The offset from the start of the header pointing to the beginning of the last PATTERNA (i.e. a value of 3*(count(PATTERNA)-1))
 			ds 2 - If the Loop Start is in front or simultaneous with the first event, return the delta time between these two (0 if simultaneous)
 		If there is no loop:
 			dw $0000
@@ -413,28 +414,36 @@ Track header
 			dw $0000
 			dw $0000
 
-Track table
-	ds 2*number_of_tracks - pointers to Track x
+	Overall, this can be generalized as:
+	PATTERN
+		ds 2 - time between the previous block and the start of this block
+		ds 1 - pattern index number, $FE if loop, $FF if no loop
+		(ds 2 - If $FE/$FF, track header offset for loop)
+		(ds 2 - If $FE/$FF, time between the current block and the start of the block that's at the loop start)
 
-	There are up to 8 tracks. Each BLOCKA references a new track
+Pattern table
+	ds 2*number_of_patterns - pointers to Pattern x
+
+	There are up to 8 patterns. Each BLOCKA references a new pattern
+	A pattern acts as a mini track. A track is made up of 1-2 patterns.
 	In other words, a song that loops back to the middle of the song is split
-		There are up to 4 tracks to represent the music before the loop, and up to 4 tracks defining the music during the loop
+		There are up to 4 patterns to represent the music before the loop, and up to 4 patterns defining the music during the loop
 	If there are 4 defined track headers each with a single BLOCKA,
-		then there are 4 tracks
+		then there are 4 patterns
 	If there are only 3 defined track headers each with a single BLOCKA,
-		some versions of gm2song.exe will still define 4 tracks (an empty track will be inserted)
+		some versions of gm2song.exe will still define 4 patterns (an empty pattern will be inserted)
 	If there are 4 defined track headers with two BLOCKAs,
-		then there are 8 tracks
+		then there are 8 patterns
 
-Track data
-	Each entry in the track table has a track.
-	Each track will have X events (notes to play), a possible ending ProgramChangeEvent, and an end of track
-	At the very minimum, a null track has only the end of track bytes (3 bytes)
+Pattern data
+	Each entry in the pattern table has a pattern.
+	Each pattern will have X events (notes to play), a possible ending ProgramChangeEvent, and an end of pattern
+	At the very minimum, a null pattern has only the end of pattern bytes (3 bytes)
 
-	Track schema:
+	Pattern schema:
 		(Event)*X
 		(Possible ProgramChangeEvent)
-		$F0 $00 $FF = end of track
+		$F0 $00 $FF = EndOfPatternEvent
 
 
 Event (4-6 bytes long):
@@ -461,6 +470,13 @@ ProgramChangeEvent:
 		Bit 7: 1
 		Bit 6-0: Program data
 
+EndOfPatternEvent:
+	1) ds 2
+		Bit 15-12 = Velocity (must be $0F)
+		Bit 11-0 = DeltaTime (always $000 but doesn't necessarily have to be so)
+	2) ds 1 - $FF
+	If the velocity is not $0F, the event will instead be interpreted as an Event with an extra program command. I'm not sure how MusyX would handle an event with note 127 with a velocity of $0F (I'm guessing it would decrement the velocity or doa  separate ProgramChangeEvent+Event)
+
 7.0 ADSR format (.mxt files)
 
 The source .mxt file is little-endian and contains the following 8 bytes of data:
@@ -471,10 +487,12 @@ The source .mxt file is little-endian and contains the following 8 bytes of data
 
 The output data is little-endian and is 7 bytes long:
 	v = min($0F,math.floor(Sustain*0.003662109375+0.5)) ;about 1/273
-	dw math.floor(3840/cycles(max(1,Attack))+0.5)
+	dw math.floor($0F*$100/cycles(max(1,Attack))+0.5)
 	dw -(($0F-v)*$100//cycles(max(1,Decay)))
 	db v
 	dw -(v*$100//cycles(max(1,Release)))
+
+Note that the "max" velocity is $1000 and not $1600, even though MusyX.exe says that $1600 is 100%. You should always base your Sustain level as fraction of $1000 (72.7272%).
 
 8.0 SoundMacro format (.mxm files)
 
@@ -906,4 +924,58 @@ I was not able to figure out the exact algorithm for determining the right order
 SFX parameters
 
 This will generate a file called sfxinfo.txt that will tell you what parameters to put in each for SFX. Simply create an SFXgroup and then transcribe the info from the .txt file into the SFXgroup
+
+10.0 Miscellaneous Notes or MusyX Design Considerations
+
+Here are some things I noted when decompiling the driver.
+
+snd_Init may also take c as an undocumented input. Every time MusyX changes the bank, it will ldh [$FF00+c], BANK. You can use this to store the current bank in HRAM. Otherwise, make sure c points to an unimportant memory location before calling snd_Init
+
+Each SoundMacro should ideally start with SETVOICE to better define its use. This is very important for SFXs which default to voice 0, but less important for SoundMacros generated exclusively from song notes, where the Track implies the default voice
+
+The minimum and maximum key frequencies allowed are $24-$77 (C2-B8)
+	Key frequencies out of this range will wrap around
+
+Volume is calculated from 4 parameters: 
+	a = volume from SetSFXVolume or SetSongVolume
+	b = volume from SoundMacro (the velocity of a note in a song, or the manually defined volume in the SoundMacro file)
+	c = volume from envelope effect (ADSR, ENVELOPE)
+	d = volume from NR50 (hardware master volume)
+	Software volume = a*b*c
+The function SPLITVEL will split based on the value of a*b
+
+If using ADSRs, note that the "max" velocity is $1000 and not $1600, even though MusyX.exe says that $1600 is 100%. You should always base your Sustain level as fraction of $1000 (a fraction of 72.7272%).
+
+The version of MusyX packaged with Magi-Nation (which has a version slightly later than MusyX.exe 1.01 / gm2song.exe version 1.03 / MUConv.exe version 1.04) has the following bugs:
+	RNDNOTE seems to be bugged for the setting rel/abs = 1. In addition, the note's sound effect might not update if used for any voice other than the first.
+	
+	snd_SetMasterVolume is bugged. To set a volume, you can input a number $80-$87 instead of $00-$07 to bypass the bug
+
+	Random numbers for RNDNOTE (free) and WAIT are bugged:
+		For RNDNOTE, the Detune parameter will be ignored
+		For WAIT, for numbers higher than 4267 ms, the upper limit of the random number will be floored by 4267 ms
+
+	PORTAMENTO's relative flag seems bugged. Always use absolute. If you really need relative, PORTLAST might do the job for you instead
+
+	ADD_SET_PRIO is potentially bugged for negative relative numbers
+
+
+Sample playback notes:
+	When using STARTSAMPLE on a low quality sound, MusyX will playback the sample at
+	about 48 Hz, and resync the sample every 60 Hz.
+	In other words, the first 26 data will be played, and then 6 data will be skipped
+	There can be a bit of misalignment due to small timing errors where 20-32 data will be played before jumping to the next block of 32 data.
+
+	You can significantly improve the quality of low-quality sample playback by fixing this. The first option is to edit the MusyX driver (see source code of function _snd_SetLowQSampleFrequency). The second option is to edit your wave file. First, resample your wave file to 1560 Hz. Next, stretch out the wave file as follows:
+		(1) Copy 26 data
+		(2) Write 6 data twice in a row
+		(3) Copy 20 data
+		(4) Write 6 data twice in a row
+		(5) Copy 20 data
+		etc
+		until end of file
+
+Song playback speed
+	Songs are played back at 99.161132812% of the stated bpm value
+
 ```
