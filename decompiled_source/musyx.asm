@@ -10,11 +10,10 @@ SECTION "MUSYX", ROMX[$4000]
 ; This bank is extremely similar to the cd version,
 ; but there might be very small changes
 
-; There are two new public functions that I have named
-; snd_ChangeSFXNote and snd_ChangeSFXVolume.
+; There are two undocumented public functions in this version
+; called snd_SFXPitch and snd_SFXVolume.
 
-; All public functions (that start with snd_) use original names,
-; except for snd_ChangeSFXNote and snd_ChangeSFXVolume whose names I invented
+; All public functions (that start with snd_) use original names
 ; All private functions (that start with _snd_) have been given names
 
     ; $4000
@@ -3918,7 +3917,7 @@ snd_StopSFX::
     ret
 
     ; $4FF8
-snd_ChangeSFXNote::
+snd_SFXPitch::
     ; Undocumented public function
     ; This function will change the key of a specific sound effect, previously
     ; started by snd_StartSFX.
@@ -3935,7 +3934,7 @@ snd_ChangeSFXNote::
     ret
 
     ; $4FFF
-snd_ChangeSFXVolume::
+snd_SFXVolume::
     ; Undocumented public function
     ; This function will change the volume of a specific sound effect, previously
     ; started by snd_StartSFX.
